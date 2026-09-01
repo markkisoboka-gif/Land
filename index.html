@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proportional Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #fbfaf7;
+    --bg-panel: #f3f1eb;
+    --bg-panel-2: #ffffff;
+    --redact: #17191c;
+    --text: #1c1f24;
+    --text-dim: #565c66;
+    --text-faint: #8b909a;
+    --accent: #b5762a;
+    --accent-dim: rgba(181,118,42,0.10);
+    --line: #ded9cd;
+    --line-strong: #c7c1b2;
+    --error: #b04a32;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.wordmark,.pill,.field-label,.meta-label{font-family:'Space Grotesk', sans-serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:var(--accent);}
+  .wrap{max-width:760px;margin:0 auto;padding:0 28px;}
+
+  header{
+    border-bottom:1px solid var(--line);
+    padding:22px 0;
+  }
+  .header-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .wordmark{font-weight:700;font-size:17px;letter-spacing:0.04em;}
+  .wordmark span{color:var(--accent);}
+  .status-pill{
+    display:flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+
+  .hero{padding:88px 0 56px;}
+  .hero h1{
+    font-size:40px;line-height:1.16;font-weight:600;letter-spacing:-0.01em;
+    margin:0 0 22px;max-width:620px;
+  }
+  .hero p.lead{
+    font-size:17px;color:var(--text-dim);max-width:560px;margin:0 0 40px;
+  }
+  .meta-strip{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  }
+  .meta-cell{padding:16px 20px;border-right:1px solid var(--line);}
+  .meta-cell:last-child{border-right:none;}
+  .meta-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px;}
+  .meta-value{font-size:13px;color:var(--text);}
+
+  .section{padding:64px 0;border-top:1px solid var(--line);opacity:0;transform:translateY(14px);transition:opacity .6s ease, transform .6s ease;}
+  .section.in{opacity:1;transform:none;}
+  .section-tag{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+  .section h2{font-size:24px;font-weight:600;margin:0 0 20px;letter-spacing:-0.005em;}
+  .section p{color:var(--text-dim);font-size:15.5px;margin:0 0 16px;max-width:620px;}
+  .section p:last-child{margin-bottom:0;}
+
+  .memo{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:26px 28px;
+    font-size:14px;
+    color:var(--text-dim);
+    line-height:1.9;
+  }
+  .memo-foot{
+    display:flex;justify-content:space-between;
+    margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);
+    font-size:11px;color:var(--text-faint);letter-spacing:0.04em;
+  }
+
+  .verify-panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:28px;
+  }
+  .verify-controls{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    margin-bottom:22px;
+    padding-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .verify-field{display:flex;flex-direction:column;gap:6px;}
+  .verify-field label{font-size:11px;letter-spacing:0.04em;color:var(--text-dim);}
+  .verify-field input[type="date"]{
+    background:var(--bg-panel-2);
+    border:1px solid var(--line-strong);
+    border-radius:4px;
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:9px 10px;
+  }
+  .verify-buttons{display:flex;gap:8px;}
+  .verify-btn{
+    background:var(--accent);
+    color:#1a1206;
+    border:none;
+    border-radius:4px;
+    padding:10px 16px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    transition:filter .15s ease;
+  }
+  .verify-btn:hover{filter:brightness(1.08);}
+  .verify-btn.secondary{
+    background:transparent;
+    color:var(--text-dim);
+    border:1px solid var(--line-strong);
+  }
+  .verify-btn.secondary:hover{filter:none;border-color:var(--accent);color:var(--accent);}
+  .verify-list{display:flex;flex-direction:column;gap:0;}
+  .verify-row{
+    display:grid;
+    grid-template-columns:110px 1fr auto;
+    gap:16px;
+    align-items:center;
+    padding:14px 4px;
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .verify-row:last-child{border-bottom:none;}
+  .verify-date{font-family:'IBM Plex Mono', monospace;color:var(--text);font-size:13px;}
+  .verify-hash{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--text-faint);
+    font-size:12px;
+    word-break:break-all;
+  }
+  .verify-link{
+    font-size:12.5px;
+    font-weight:500;
+    white-space:nowrap;
+  }
+  .verify-empty{
+    padding:24px 4px;
+    text-align:center;
+    color:var(--text-faint);
+    font-size:13.5px;
+  }
+  .verify-note{
+    font-size:12px;
+    color:var(--text-faint);
+    margin-bottom:18px;
+    padding-bottom:16px;
+    border-bottom:1px dashed var(--line);
+  }
+  @media (max-width:640px){
+    .verify-row{grid-template-columns:1fr;gap:4px;}
+    .verify-controls{flex-direction:column;align-items:stretch;}
+  }
+
+  .form-panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:36px;
+  }
+  .form-panel-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--line);
+  }
+  .form-panel-head h3{font-size:15px;margin:0;font-weight:600;}
+  .form-id{font-size:11px;color:var(--text-faint);}
+  .field{margin-bottom:22px;}
+  .field-label{
+    display:block;font-size:12px;letter-spacing:0.04em;color:var(--text-dim);
+    margin-bottom:8px;font-weight:500;
+  }
+  .field-hint{font-size:12px;color:var(--text-faint);margin-top:6px;}
+  input[type="text"], textarea{
+    width:100%;
+    background:var(--bg-panel-2);
+    border:1px solid var(--line-strong);
+    border-radius:4px;
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    padding:12px 14px;
+    resize:vertical;
+    transition:border-color .15s ease;
+  }
+  input[type="text"]:focus, textarea:focus{
+    outline:none;border-color:var(--accent);
+  }
+  textarea{min-height:96px;line-height:1.6;}
+  .charcount{font-size:11px;color:var(--text-faint);text-align:right;margin-top:4px;}
+  .charcount.ok{color:var(--accent);}
+
+  .terms-box{
+    background:var(--bg-panel-2);
+    border:1px solid var(--line-strong);
+    border-radius:4px;
+    padding:16px 18px;
+    max-height:150px;
+    overflow-y:auto;
+    font-size:12.5px;
+    color:var(--text-faint);
+    line-height:1.7;
+    margin-bottom:14px;
+  }
+  .terms-box p{color:var(--text-faint);font-size:12.5px;margin:0 0 10px;}
+  .terms-box p:last-child{margin-bottom:0;}
+  .checkbox-row{display:flex;gap:10px;align-items:flex-start;}
+  .checkbox-row input[type="checkbox"]{
+    margin-top:3px;width:15px;height:15px;flex-shrink:0;accent-color:var(--accent);
+  }
+  .checkbox-row label{font-size:13px;color:var(--text-dim);}
+
+  .honeypot{position:absolute;left:-9999px;opacity:0;height:0;}
+
+  button.submit{
+    width:100%;
+    background:var(--accent);
+    color:#1a1206;
+    border:none;
+    border-radius:4px;
+    padding:14px 20px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    margin-top:8px;
+    transition:filter .15s ease, transform .1s ease;
+  }
+  button.submit:hover{filter:brightness(1.08);}
+  button.submit:active{transform:scale(0.99);}
+  button.submit:disabled{opacity:0.45;cursor:not-allowed;filter:none;}
+
+  .form-error{font-size:12.5px;color:var(--error);margin-top:12px;display:none;}
+  .form-error.show{display:block;}
+
+  .confirm{
+    display:none;
+    text-align:center;padding:20px 10px 4px;
+  }
+  .confirm.show{display:block;}
+  .confirm .stamp{
+    display:inline-block;border:1px solid var(--accent);color:var(--accent);
+    font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+    padding:5px 12px;border-radius:3px;margin-bottom:16px;
+  }
+  .confirm p{color:var(--text-dim);font-size:14px;max-width:400px;margin:0 auto;}
+  .confirm .ref{color:var(--text-faint);font-size:12px;margin-top:14px;}
+
+  footer{padding:40px 0 60px;border-top:1px solid var(--line);}
+  footer p{font-size:12px;color:var(--text-faint);margin:0;}
+
+  @media (max-width:640px){
+    .hero h1{font-size:30px;}
+    .meta-strip{grid-template-columns:1fr;}
+    .meta-cell{border-right:none;border-bottom:1px solid var(--line);}
+    .meta-cell:last-child{border-bottom:none;}
+    .form-panel{padding:24px 20px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .section{transition:none;opacity:1;transform:none;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <div class="wordmark">PROPORTIONAL <span>LEDGER</span></div>
+    <div class="status-pill"><span class="dot"></span>Live — trading &amp; documentation ongoing</div>
+  </div>
+  <div class="wrap" style="padding-top:6px;">
+    <a href="https://prop-drab.vercel.app" target="_blank" rel="noopener" style="font-size:11.5px;color:var(--accent);text-decoration:none;">View the live trading platform →</a>
+  </div>
+</header>
+
+<div class="hero wrap">
+  <h1>A private research initiative testing one trading method against real market conditions, using virtual capital instead of real money.</h1>
+  <p class="lead">Every position is sized, entered, and managed the way a real trade would be — live market prices, real margin requirements, real stop-losses, real drawdown — the only thing that isn't real is the money behind it. The objective is straightforward to state and harder to prove: to sharpen the predictions behind each trade to the point where they reliably compound into asset growth over time — not through a lucky run, but through a documented, repeatable process, tested daily and left open to scrutiny rather than asserted in advance.</p>
+
+  <div class="meta-strip mono">
+    <div class="meta-cell">
+      <div class="meta-label">Status</div>
+      <div class="meta-value">Live — trading ongoing</div>
+      <a href="https://prop-drab.vercel.app" target="_blank" rel="noopener" style="font-size:10px;color:var(--accent);text-decoration:none;display:inline-block;margin-top:4px;">View live platform →</a>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-label">Phase</div>
+      <div class="meta-value">Method permanently proprietary</div>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-label">Access</div>
+      <div class="meta-value">By inquiry only</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section class="section" data-reveal>
+    <div class="section-tag">System design</div>
+    <h2>How it works</h2>
+    <p>On any given day, predictions may be made across some or all of the ten tracked assets — six major indices and four commodities — sized against a single pooled fund of virtual capital, not real money. There's no obligation to trade every asset daily; how many positions are opened on a given day is a discretionary call, not a fixed requirement.</p>
+    <p>The portfolio starts from a single pooled fund of $250,000 in virtual capital — the real, spendable balance behind every position. Within that, each of the ten assets carries its own fixed $25,000 baseline, used to track that asset's individual growth and drawdown over time; this is a measurement reference, not a physical division of the cash itself, which remains pooled and available to wherever a position actually needs it.</p>
+    <p>Predictions are made manually, one trading day ahead, and recorded on video before that day's market session begins. Outcomes are then left to play out against real, live prices — sometimes closed early, sometimes stopped out, sometimes running to the end of the session — exactly as a live account would be managed.</p>
+    <p>Every result, win or loss, is kept on the record. Nothing is curated after the fact.</p>
+  </section>
+
+  <section class="section" id="verification" data-reveal>
+    <div class="section-tag">Verification</div>
+    <h2>Proof archive</h2>
+    <p>Every prediction video is recorded with an independent cryptographic timestamp — a unique fingerprint, generated at the moment of recording, proving that exact file existed at that exact time. This is independent of any platform involved; the proof is anchored to a public blockchain record that no single party controls.</p>
+    <p>Proof is not published inline with every video — it exists for each one, and is available on request. The underlying proof for each week is also published here, collectively, by Sunday at the latest. Search by date or date range below to find a specific day's proof.</p>
+    <p>One thing worth knowing before searching: a prediction video — covering that day's calls across all tracked assets — is always recorded the evening before the trading day it predicts. The date shown in the archive below is the trading date the proof applies to; the matching video will be dated the day prior. For example, proof for a given date's trading corresponds to a video recorded and uploaded the previous evening. Since authenticating a proof requires both the hash and its corresponding video together, videos themselves are published on the <a href="https://www.youtube.com/@ProportionalAssetsGrowth" target="_blank" rel="noopener" style="font-weight:600;">Proportional Asset Growth YouTube channel →</a></p>
+    <p>To verify a specific day: find the video recorded the evening before that trading date, then use "View proof" below to get its matching file. That link will open a screen showing "No preview available" — this is expected, not a dead end; the file is a small technical proof document, not something built to be viewed directly. Click "Download" on that same screen to get the file. Upload both — the video and that downloaded file — into any OpenTimestamps-compatible verification tool (opentimestamps.org itself is free and requires no account). It will independently confirm the exact time the video existed, using public blockchain data that no single party controls.</p>
+
+    <p style="margin-bottom:8px;">This archive proves a prediction was made and recorded at a specific time — it doesn't by itself show what actually happened afterward. For the real, live trading record behind these predictions — current positions, full trade history, and every performance figure — <a href="https://prop-drab.vercel.app" target="_blank" rel="noopener" style="font-weight:600;">view the live trading platform →</a></p>
+    <p style="font-size:13px;color:var(--text-faint);margin-bottom:28px;">Visiting the platform, you'll have full, unrestricted access to live prices, open positions, and the complete trade history and performance archive — search and review any of it freely. Trading itself, and a small number of account-level controls, are restricted to the account owner.</p>
+
+    <div class="verify-panel">
+      <div class="verify-controls">
+        <div class="verify-field">
+          <label for="verifyFrom">From</label>
+          <input type="date" id="verifyFrom">
+        </div>
+        <div class="verify-field">
+          <label for="verifyTo">To</label>
+          <input type="date" id="verifyTo">
+        </div>
+        <div class="verify-buttons">
+          <button class="verify-btn" id="verifySearchBtn">Search</button>
+          <button class="verify-btn secondary" id="verifyResetBtn">Show all</button>
+        </div>
+      </div>
+      <div class="verify-note" id="verifyNote">Proofs are published weekly, by Sunday at the latest. Records shown here are illustrative pending the first live publication.</div>
+      <div class="verify-list mono" id="verifyList"></div>
+    </div>
+  </section>
+
+  <section class="section" id="inquiry" data-reveal>
+    <div class="section-tag">Inquiry</div>
+    <h2>Proportional Ledger Inquiry</h2>
+    <p>This isn't a mailing list signup. The questions below exist to make sure the conversation is worth both our time — answer them properly and you'll hear back personally.</p>
+
+    <div class="form-panel">
+      <div class="form-panel-head">
+        <h3>Proportional Ledger Inquiry</h3>
+        <span class="form-id mono">FORM: PL-INQ-01</span>
+      </div>
+
+      <form id="inquiryForm" name="proportional-ledger-inquiry" novalidate>
+        <input type="text" name="hp-field" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="field">
+          <label class="field-label" for="fullName">Full name</label>
+          <input type="text" id="fullName" name="fullName" placeholder="Jordan Ellery" required>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="objectives">What are you hoping to get out of this?</label>
+          <textarea id="objectives" name="objectives" placeholder="Describe what you're actually trying to achieve — not just 'returns'." required></textarea>
+          <div class="charcount mono" data-for="objectives">0 / 40 words minimum</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="value">Why do you think this could add value to you specifically?</label>
+          <textarea id="value" name="value" placeholder="Be specific. Generic answers are the easiest ones to screen out." required></textarea>
+          <div class="charcount mono" data-for="value">0 / 40 words minimum</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Terms and conditions</label>
+          <div class="terms-box">
+            <p>By submitting this form, you acknowledge that this project is not soliciting or accepting real capital at this time. All figures referenced are drawn from a virtual portfolio, sized and managed to reflect real trading conditions as closely as possible — they are not indicative of future performance and do not constitute an offer of securities.</p>
+            <p>Nothing on this page, or in any resulting correspondence, constitutes financial, investment, or legal advice.</p>
+            <p>Submitting an inquiry does not guarantee a response, a meeting, or future access to any offering. Inquiries may be declined without explanation.</p>
+            <p>Information submitted here is used solely to evaluate and respond to your inquiry, and is not shared with third parties.</p>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="agree" name="agree" required>
+            <label for="agree">I have read and agree to the terms above.</label>
+          </div>
+        </div>
+
+        <button type="submit" class="submit" id="submitBtn">Submit inquiry</button>
+        <div class="form-error mono" id="formError">All fields are required, including the terms checkbox.</div>
+      </form>
+
+      <div class="confirm" id="confirmPanel">
+        <div class="stamp">Inquiry logged</div>
+        <p>Thank you for taking the time to work through this — inquiries like yours are exactly what this process is for. Every submission is read personally, and if it looks like a fit, you'll hear from me directly.</p>
+        <div class="ref mono" id="refCode"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>Proportional Ledger · Results referenced are from a simulated trading account, sized and managed to reflect real trading conditions. Not an offer of securities.</p>
+  </div>
+</footer>
+
+<script>
+  // Proof archive data — live-fetched from a published Google Sheet.
+  // Format: date, hash, link — one row per trading day (covers all assets that day).
+  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxM1_uBJDN5YCRji5h8XIPnMHrfimfwe3u9GXJvmhxM2nEhA4I02o5GxgHFKhyW4tAIH_83w1XUQgE/pub?output=csv';
+
+  const fallbackEntries = [];
+
+  let verifyEntries = fallbackEntries;
+
+  function parseCSV(text){
+    const lines = text.trim().split('\n');
+    const rows = lines.slice(1);
+    return rows.map(line => {
+      const cells = line.match(/(".*?"|[^,]+)(?=,|$)/g) || [];
+      const clean = cells.map(c => c.replace(/^"|"$/g, '').trim());
+      return { date: clean[0] || '', hash: clean[1] || '', link: clean[2] || '#' };
+    }).filter(e => e.date);
+  }
+
+  const DEFAULT_VISIBLE_COUNT = 10;
+
+  function renderVerifyList(entries, limit){
+    const listEl = document.getElementById('verifyList');
+    const toShow = limit ? entries.slice(0, limit) : entries;
+    if (!toShow.length){
+      listEl.innerHTML = '<div class="verify-empty">No proof entries found for that range.</div>';
+      return;
+    }
+    listEl.innerHTML = toShow.map(e => `
+      <div class="verify-row">
+        <div class="verify-date">${e.date}</div>
+        <div class="verify-hash">${e.hash}</div>
+        <a class="verify-link" href="${e.link}" target="_blank" rel="noopener">View proof →</a>
+      </div>
+    `).join('');
+  }
+
+  function updateVerifyNote(){
+    const noteEl = document.getElementById('verifyNote');
+    if (!verifyEntries.length){
+      noteEl.textContent = 'Proofs are published weekly, by Sunday at the latest. Records shown here are illustrative pending the first live publication.';
+      return;
+    }
+    const sorted = [...verifyEntries].sort((a,b) => a.date.localeCompare(b.date));
+    const earliest = sorted[0].date;
+    const count = verifyEntries.length;
+    if (count > DEFAULT_VISIBLE_COUNT){
+      noteEl.textContent = `Showing the ${DEFAULT_VISIBLE_COUNT} most recent entries. The full archive extends back to ${earliest} — use the search above to look up a specific date or range.`;
+    } else {
+      noteEl.textContent = `Showing the full archive, extending back to ${earliest}. Use the search above to look up a specific date or range.`;
+    }
+  }
+
+  function filterVerifyEntries(){
+    const from = document.getElementById('verifyFrom').value;
+    const to = document.getElementById('verifyTo').value;
+    let filtered = verifyEntries;
+    if (from) filtered = filtered.filter(e => e.date >= from);
+    if (to) filtered = filtered.filter(e => e.date <= to);
+    // A specific search shows every matching result, no cap
+    renderVerifyList(filtered.sort((a,b) => b.date.localeCompare(a.date)));
+  }
+
+  document.getElementById('verifySearchBtn').addEventListener('click', filterVerifyEntries);
+  document.getElementById('verifyResetBtn').addEventListener('click', () => {
+    document.getElementById('verifyFrom').value = '';
+    document.getElementById('verifyTo').value = '';
+    renderVerifyList([...verifyEntries].sort((a,b) => b.date.localeCompare(a.date)), DEFAULT_VISIBLE_COUNT);
+    updateVerifyNote();
+  });
+
+  fetch(SHEET_CSV_URL)
+    .then(res => {
+      if (!res.ok) throw new Error('Sheet fetch failed: ' + res.status);
+      return res.text();
+    })
+    .then(csvText => {
+      const parsed = parseCSV(csvText);
+      if (parsed.length){
+        verifyEntries = parsed;
+      }
+      renderVerifyList([...verifyEntries].sort((a,b) => b.date.localeCompare(a.date)), DEFAULT_VISIBLE_COUNT);
+      updateVerifyNote();
+    })
+    .catch(() => {
+      renderVerifyList([...verifyEntries].sort((a,b) => b.date.localeCompare(a.date)), DEFAULT_VISIBLE_COUNT);
+      updateVerifyNote();
+    });
+
+  const sections = document.querySelectorAll('[data-reveal]');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.15 });
+  sections.forEach(s => io.observe(s));
+
+  // Visit tracking — pings the platform's shared backend, since that's where
+  // the counters live. No personal data recorded, just a running total.
+  // ⚠️ PLACEHOLDER — replace with your platform's real deployed URL.
+  const PLATFORM_API_BASE = 'https://prop-drab.vercel.app';
+  (function recordLandingVisit(){
+    const key = 'visitCounted:landing';
+    if (sessionStorage.getItem(key)) return; // once per tab session
+    sessionStorage.setItem(key, '1');
+    fetch(PLATFORM_API_BASE + '/api/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ site: 'landing' })
+    }).catch(() => {}); // fail silently — never let this affect the visitor's experience
+  })();
+
+  function wordCount(str){
+    return str.trim().length ? str.trim().split(/\s+/).length : 0;
+  }
+
+  ['objectives','value'].forEach(id => {
+    const ta = document.getElementById(id);
+    const counter = document.querySelector('.charcount[data-for="'+id+'"]');
+    ta.addEventListener('input', () => {
+      const wc = wordCount(ta.value);
+      counter.textContent = wc + ' / 40 words minimum';
+      counter.classList.toggle('ok', wc >= 40);
+    });
+  });
+
+  const form = document.getElementById('inquiryForm');
+  const errorEl = document.getElementById('formError');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Formspree endpoint — "Proportional Ledger Inquiry" form.
+  const FORMSPREE_URL = 'https://formspree.io/f/meajylwv';
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    errorEl.classList.remove('show');
+
+    const data = new FormData(form);
+    const honeypot = data.get('hp-field');
+    const name = data.get('fullName').trim();
+    const objectives = data.get('objectives').trim();
+    const value = data.get('value').trim();
+    const agreed = document.getElementById('agree').checked;
+
+    const validName = name.length >= 2;
+    const validObjectives = wordCount(objectives) >= 40;
+    const validValue = wordCount(value) >= 40;
+
+    if (honeypot) return; // silently drop likely-bot submissions
+
+    if (!validName || !validObjectives || !validValue || !agreed) {
+      const missing = [];
+      if (!validName) missing.push('your full name');
+      if (!validObjectives) missing.push('the objectives answer needs at least 40 words (currently ' + wordCount(objectives) + ')');
+      if (!validValue) missing.push('the value answer needs at least 40 words (currently ' + wordCount(value) + ')');
+      if (!agreed) missing.push('you need to agree to the terms');
+      errorEl.textContent = 'Before submitting: ' + missing.join('; ') + '.';
+      errorEl.classList.add('show');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: data
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Submission failed (' + res.status + ')');
+        form.style.display = 'none';
+        const confirmPanel = document.getElementById('confirmPanel');
+        confirmPanel.classList.add('show');
+        const ref = 'PL-' + Date.now().toString(36).toUpperCase();
+        document.getElementById('refCode').textContent = 'Reference: ' + ref;
+      })
+      .catch((err) => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit inquiry';
+        errorEl.textContent = 'Something went wrong submitting the form (' + err.message + '). Please try again or contact directly.';
+        errorEl.classList.add('show');
+      });
+  });
+</script>
+
+</body>
+</html>
