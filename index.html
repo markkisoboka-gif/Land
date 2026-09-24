@@ -295,7 +295,7 @@
     <div class="status-pill"><span class="dot"></span>Live — trading &amp; documentation ongoing</div>
   </div>
   <div class="wrap" style="padding-top:6px;">
-    <a href="https://prop-drab.vercel.app" target="_blank" rel="noopener" style="font-size:11.5px;color:var(--accent);text-decoration:none;">View the live trading platform →</a>
+    <a href="https://proportional-platform.markkisoboka.workers.dev" target="_blank" rel="noopener" style="font-size:11.5px;color:var(--accent);text-decoration:none;">View the live trading platform →</a>
   </div>
 </header>
 
@@ -307,7 +307,7 @@
     <div class="meta-cell">
       <div class="meta-label">Status</div>
       <div class="meta-value">Live — trading ongoing</div>
-      <a href="https://prop-drab.vercel.app" target="_blank" rel="noopener" style="font-size:10px;color:var(--accent);text-decoration:none;display:inline-block;margin-top:4px;">View live platform →</a>
+      <a href="https://proportional-platform.markkisoboka.workers.dev" target="_blank" rel="noopener" style="font-size:10px;color:var(--accent);text-decoration:none;display:inline-block;margin-top:4px;">View live platform →</a>
     </div>
     <div class="meta-cell">
       <div class="meta-label">Phase</div>
@@ -339,7 +339,7 @@
     <p>One thing worth knowing before searching: a prediction video — covering that day's calls across all tracked assets — is always recorded the evening before the trading day it predicts. The date shown in the archive below is the trading date the proof applies to; the matching video will be dated the day prior. For example, proof for a given date's trading corresponds to a video recorded and uploaded the previous evening. Since authenticating a proof requires both the hash and its corresponding video together, videos themselves are published on the <a href="https://www.youtube.com/@ProportionalAssetsGrowth" target="_blank" rel="noopener" style="font-weight:600;">Proportional Asset Growth YouTube channel →</a></p>
     <p>To verify a specific day: find the video recorded the evening before that trading date, then use "View proof" below to get its matching file. That link will open a screen showing "No preview available" — this is expected, not a dead end; the file is a small technical proof document, not something built to be viewed directly. Click "Download" on that same screen to get the file. Upload both — the video and that downloaded file — into any OpenTimestamps-compatible verification tool (opentimestamps.org itself is free and requires no account). It will independently confirm the exact time the video existed, using public blockchain data that no single party controls.</p>
 
-    <p style="margin-bottom:8px;">This archive proves a prediction was made and recorded at a specific time — it doesn't by itself show what actually happened afterward. For the real, live trading record behind these predictions — current positions, full trade history, and every performance figure — <a href="https://prop-drab.vercel.app" target="_blank" rel="noopener" style="font-weight:600;">view the live trading platform →</a></p>
+    <p style="margin-bottom:8px;">This archive proves a prediction was made and recorded at a specific time — it doesn't by itself show what actually happened afterward. For the real, live trading record behind these predictions — current positions, full trade history, and every performance figure — <a href="https://proportional-platform.markkisoboka.workers.dev" target="_blank" rel="noopener" style="font-weight:600;">view the live trading platform →</a></p>
     <p style="font-size:13px;color:var(--text-faint);margin-bottom:28px;">Visiting the platform, you'll have full, unrestricted access to live prices, open positions, and the complete trade history and performance archive — search and review any of it freely. Trading itself, and a small number of account-level controls, are restricted to the account owner.</p>
 
     <div class="verify-panel">
@@ -525,7 +525,7 @@
   // Visit tracking — pings the platform's shared backend, since that's where
   // the counters live. No personal data recorded, just a running total.
   // ⚠️ PLACEHOLDER — replace with your platform's real deployed URL.
-  const PLATFORM_API_BASE = 'https://prop-drab.vercel.app';
+  const PLATFORM_API_BASE = 'https://proportional-platform.markkisoboka.workers.dev';
   (function recordLandingVisit(){
     const key = 'visitCounted:landing';
     if (sessionStorage.getItem(key)) return; // once per tab session
